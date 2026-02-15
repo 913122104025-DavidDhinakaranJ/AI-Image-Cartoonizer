@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+  <defs>
+    <linearGradient id="g2" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#4f88ff"/>
+      <stop offset="100%" stop-color="#0f2857"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" fill="url(#g2)"/>
+  <circle cx="240" cy="54" r="18" fill="#fff7cd"/>
+  <path d="M0 142 L60 118 L130 126 L200 110 L320 130 V180 H0 Z" fill="#3d5da8" opacity="0.7"/>
+  <text x="16" y="32" font-size="22" font-family="Trebuchet MS, sans-serif" fill="#dbe8ff">Shinkai</text>
+</svg>

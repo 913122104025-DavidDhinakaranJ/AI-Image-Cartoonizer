@@ -1,0 +1,49 @@
+{
+  "styles": [
+    {
+      "id": "hayao",
+      "name": "Hayao",
+      "preview": "/static/previews/hayao.svg",
+      "model_path": "models/hayao.onnx",
+      "aqe": {
+        "resize_max": 1024,
+        "denoise_strength": 0.25,
+        "edge_weight": 0.20,
+        "color_quant_k": 24,
+        "contrast_gain": 1.06,
+        "sharpen_amount": 0.20,
+        "saturation_gain": 1.08
+      }
+    },
+    {
+      "id": "shinkai",
+      "name": "Shinkai",
+      "preview": "/static/previews/shinkai.svg",
+      "model_path": "models/shinkai.onnx",
+      "aqe": {
+        "resize_max": 1024,
+        "denoise_strength": 0.22,
+        "edge_weight": 0.18,
+        "color_quant_k": 28,
+        "contrast_gain": 1.10,
+        "sharpen_amount": 0.18,
+        "saturation_gain": 1.12
+      }
+    },
+    {
+      "id": "paprika",
+      "name": "Paprika",
+      "preview": "/static/previews/paprika.svg",
+      "model_path": "models/paprika.onnx",
+      "aqe": {
+        "resize_max": 1024,
+        "denoise_strength": 0.30,
+        "edge_weight": 0.24,
+        "color_quant_k": 20,
+        "contrast_gain": 1.04,
+        "sharpen_amount": 0.24,
+        "saturation_gain": 1.06
+      }
+    }
+  ]
+}
