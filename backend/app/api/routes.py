@@ -15,7 +15,7 @@ from app.models.schemas import (
 )
 from app.services.cartoonizer import CartoonizerService
 from app.services.metrics import compute_metrics
-from app.services.postprocess import postprocess_improved
+from app.services.postprocess import postprocess_improved, to_lite_preset
 from app.services.preprocess import decode_image, preprocess_baseline, preprocess_improved
 from app.services.result_store import ResultStore
 from app.services.style_registry import StyleRegistry
@@ -26,6 +26,9 @@ STYLE_PRESETS_PATH = BACKEND_ROOT / "style_presets.json"
 RESULTS_DIR = BACKEND_ROOT / "results"
 
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp"}
+MAX_UPLOAD_BYTES = 12 * 1024 * 1024  # 12 MB
+MAX_IMAGE_DIMENSION = 4096
+MAX_IMAGE_PIXELS = 16_000_000
 
 style_registry = StyleRegistry(STYLE_PRESETS_PATH)
 cartoonizer_service = CartoonizerService(style_registry)
@@ -52,7 +55,7 @@ def get_styles() -> StylesResponse:
 async def cartoonize_image(
     image: UploadFile = File(...),
     style_id: str = Form(...),
-    variant: str = Form("improved"),
+    variant: str = Form("improved_lite"),
 ) -> CartoonizeResponse:
     if image.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
@@ -60,8 +63,11 @@ async def cartoonize_image(
             detail="Unsupported file format. Use JPG, PNG, or WEBP.",
         )
 
-    if variant not in {"baseline", "improved"}:
-        raise HTTPException(status_code=400, detail="variant must be baseline or improved")
+    if variant not in {"baseline", "improved", "improved_lite"}:
+        raise HTTPException(
+            status_code=400,
+            detail="variant must be baseline, improved, or improved_lite",
+        )
 
     style = style_registry.get_style(style_id)
     if style is None:
@@ -70,11 +76,27 @@ async def cartoonize_image(
     image_bytes = await image.read()
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Uploaded file is empty")
+    if len(image_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Image file is too large. Max allowed size is {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.",
+        )
 
     try:
         decoded = decode_image(image_bytes)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    height, width = decoded.shape[:2]
+    if max(height, width) > MAX_IMAGE_DIMENSION:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Image dimensions exceed limit. Max width/height is {MAX_IMAGE_DIMENSION}px.",
+        )
+    if height * width > MAX_IMAGE_PIXELS:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Image resolution is too high. Max total pixels is {MAX_IMAGE_PIXELS}.",
+        )
 
     preset = style_registry.get_preset(style_id)
     started = time.perf_counter()
@@ -83,6 +105,11 @@ async def cartoonize_image(
         prepared = preprocess_baseline(decoded, preset.resize_max)
         stylized = cartoonizer_service.cartoonize(prepared, style_id)
         output = stylized
+    elif variant == "improved_lite":
+        lite_preset = to_lite_preset(preset)
+        prepared = preprocess_improved(decoded, lite_preset)
+        stylized = cartoonizer_service.cartoonize(prepared, style_id)
+        output = postprocess_improved(stylized, prepared, lite_preset)
     else:
         prepared = preprocess_improved(decoded, preset)
         stylized = cartoonizer_service.cartoonize(prepared, style_id)

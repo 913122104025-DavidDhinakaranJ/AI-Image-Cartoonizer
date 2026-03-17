@@ -8,7 +8,7 @@ Adaptive Quality Enhancement (AQE) pipeline.
 - FastAPI backend with required endpoints:
   - `GET /api/health`
   - `GET /api/styles`
-  - `POST /api/cartoonize` (`style_id`, `variant=baseline|improved`)
+  - `POST /api/cartoonize` (`style_id`, `variant=baseline|improved|improved_lite`)
 - 3 styles with external config in `backend/style_presets.json`:
   - `hayao`, `shinkai`, `paprika`
 - AQE improvement pipeline:
@@ -21,6 +21,8 @@ Adaptive Quality Enhancement (AQE) pipeline.
   - view metrics and download improved output
 - Evaluation tooling:
   - `scripts/evaluate_variants.py`
+  - `scripts/tune_style_presets.py`
+  - `scripts/plot_results.py`
   - human-study template CSV in `evaluation/human_study_template.csv`
 
 ## Model notes
@@ -79,7 +81,7 @@ Returns:
 Form-data:
 - `image` (`jpg|jpeg|png|webp`)
 - `style_id` (`hayao|shinkai|paprika`)
-- `variant` (`baseline|improved`)
+- `variant` (`baseline|improved|improved_lite`)
 
 Response:
 
@@ -110,15 +112,130 @@ Adjust AQE behavior per style in `backend/style_presets.json`:
 
 ## Evaluation workflow
 
-1. Run app backend (`http://localhost:8000`).
-2. Put test images into a folder, e.g. `samples/`.
-3. Execute:
+1. Build a fixed evaluation set (recommended `80-120` images):
+- `samples/portrait/`
+- `samples/landscape/`
+- `samples/object/`
+
+2. Run app backend (`http://localhost:8000`).
+
+3. Run scoring:
 
 ```powershell
-python .\scripts\evaluate_variants.py --input-dir .\samples --output-csv .\evaluation\results.csv
+python .\scripts\evaluate_variants.py `
+  --input-dir .\samples `
+  --output-csv .\evaluation\results.csv `
+  --summary-csv .\evaluation\summary.csv `
+  --compare-variant improved_lite
 ```
 
-Generated CSV includes baseline/improved metrics and latency per image/style.
+Outputs:
+- `evaluation/results.csv` (per-image, per-style metrics and deltas)
+- `evaluation/summary.csv` (style-level means and win rates)
+
+4. Optional: limit the run during iteration:
+
+```powershell
+python .\scripts\evaluate_variants.py --input-dir .\samples --max-images 30
+```
+
+## Auto-tune AQE presets
+
+Searches parameter combinations and picks best per style against baseline.
+
+Dry-run (does not modify config):
+
+```powershell
+python .\scripts\tune_style_presets.py `
+  --input-dir .\samples `
+  --styles hayao,shinkai,paprika `
+  --max-images 24 `
+  --max-trials 20 `
+  --trials-csv .\evaluation\tuning_trials.csv `
+  --best-json .\evaluation\tuned_presets.json
+```
+
+Apply tuned values directly to `backend/style_presets.json`:
+
+```powershell
+python .\scripts\tune_style_presets.py `
+  --input-dir .\samples `
+  --styles hayao,shinkai,paprika `
+  --max-images 24 `
+  --max-trials 20 `
+  --apply
+```
+
+## Generate report charts
+
+Create report-ready PNG charts from evaluation outputs:
+
+```powershell
+python .\scripts\plot_results.py `
+  --summary-csv .\evaluation\summary.csv `
+  --trials-csv .\evaluation\tuning_trials.csv `
+  --output-dir .\evaluation\plots
+```
+
+Expected outputs:
+- `evaluation/plots/quality_comparison.png`
+- `evaluation/plots/latency_comparison.png`
+- `evaluation/plots/win_rates.png`
+- `evaluation/plots/tuning_hayao.png` (if trials exist)
+- `evaluation/plots/tuning_shinkai.png` (if trials exist)
+- `evaluation/plots/tuning_paprika.png` (if trials exist)
+
+## Create Improved ONNX (Distillation)
+
+This pipeline creates a true student ONNX model from your improved outputs.
+
+1. Install distillation dependencies:
+
+```powershell
+# CPU/GPU generic install
+.\backend\.venv\Scripts\python.exe -m pip install -r .\training\requirements.txt
+
+# NVIDIA CUDA build (recommended for RTX GPU)
+.\backend\.venv\Scripts\python.exe -m pip install --upgrade torch --index-url https://download.pytorch.org/whl/cu121
+
+# Optional fallback when CUDA torch is unavailable on Windows
+.\backend\.venv\Scripts\python.exe -m pip install torch-directml
+```
+
+2. Generate teacher-student pairs (run per style):
+
+```powershell
+.\backend\.venv\Scripts\python.exe .\scripts\generate_teacher_pairs.py `
+  --input-dir .\samples `
+  --style-id hayao `
+  --variant improved_lite `
+  --max-images 300
+```
+
+3. Train student model (run per style):
+
+```powershell
+.\backend\.venv\Scripts\python.exe .\scripts\train_student_distill.py `
+  --manifest .\training\distill_data\hayao\manifest.csv `
+  --style-id hayao `
+  --epochs 8 `
+  --batch-size 2 `
+  --image-size 256
+```
+
+4. Export student to ONNX:
+
+```powershell
+.\backend\.venv\Scripts\python.exe .\scripts\export_student_onnx.py `
+  --checkpoint .\training\artifacts\hayao_student_best.pt `
+  --output .\backend\models\hayao_v2.onnx `
+  --image-size 512
+```
+
+5. Repeat for `shinkai` and `paprika`, then update `backend/style_presets.json` model paths:
+- `models/hayao_v2.onnx`
+- `models/shinkai_v2.onnx`
+- `models/paprika_v2.onnx`
 
 ## Tests
 

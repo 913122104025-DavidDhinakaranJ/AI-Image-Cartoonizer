@@ -18,3 +18,9 @@ dist/
 backend/results/
 *.log
 
+# Samples
+samples/
+
+# Distillation artifacts
+training/distill_data/
+training/artifacts/

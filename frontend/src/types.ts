@@ -1,4 +1,4 @@
-export type Variant = "baseline" | "improved";
+export type Variant = "baseline" | "improved" | "improved_lite";
 
 export interface StyleOption {
   id: string;

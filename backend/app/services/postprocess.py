@@ -83,3 +83,16 @@ def postprocess_improved(
     )
     sharpened = unsharp_mask(harmonized, preset.sharpen_amount)
     return sharpened
+
+
+def to_lite_preset(preset: AQEPreset) -> AQEPreset:
+    # Conservative AQE configuration focused on reducing artifacts and latency.
+    return AQEPreset(
+        resize_max=preset.resize_max,
+        denoise_strength=min(0.42, max(0.12, preset.denoise_strength + 0.06)),
+        edge_weight=max(0.0, preset.edge_weight * 0.45),
+        color_quant_k=max(24, int(preset.color_quant_k + 8)),
+        contrast_gain=min(1.04, max(1.0, preset.contrast_gain * 0.96)),
+        sharpen_amount=max(0.0, preset.sharpen_amount * 0.35),
+        saturation_gain=min(1.04, max(1.0, preset.saturation_gain * 0.95)),
+    )

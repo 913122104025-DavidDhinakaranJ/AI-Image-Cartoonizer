@@ -7,12 +7,12 @@
       "model_path": "models/hayao.onnx",
       "aqe": {
         "resize_max": 1024,
-        "denoise_strength": 0.25,
-        "edge_weight": 0.20,
+        "denoise_strength": 0.36,
+        "edge_weight": 0.18,
         "color_quant_k": 24,
-        "contrast_gain": 1.06,
-        "sharpen_amount": 0.20,
-        "saturation_gain": 1.08
+        "contrast_gain": 1.04,
+        "sharpen_amount": 0.0,
+        "saturation_gain": 1.0
       }
     },
     {
@@ -22,12 +22,12 @@
       "model_path": "models/shinkai.onnx",
       "aqe": {
         "resize_max": 1024,
-        "denoise_strength": 0.22,
-        "edge_weight": 0.18,
-        "color_quant_k": 28,
-        "contrast_gain": 1.10,
-        "sharpen_amount": 0.18,
-        "saturation_gain": 1.12
+        "denoise_strength": 0.36,
+        "edge_weight": 0.1,
+        "color_quant_k": 24,
+        "contrast_gain": 1.04,
+        "sharpen_amount": 0.0,
+        "saturation_gain": 1.06
       }
     },
     {
@@ -37,12 +37,12 @@
       "model_path": "models/paprika.onnx",
       "aqe": {
         "resize_max": 1024,
-        "denoise_strength": 0.30,
-        "edge_weight": 0.24,
-        "color_quant_k": 20,
-        "contrast_gain": 1.04,
-        "sharpen_amount": 0.24,
-        "saturation_gain": 1.06
+        "denoise_strength": 0.28,
+        "edge_weight": 0.14,
+        "color_quant_k": 24,
+        "contrast_gain": 1.02,
+        "sharpen_amount": 0.0,
+        "saturation_gain": 1.0
       }
     }
   ]

@@ -55,7 +55,7 @@ function App() {
     try {
       const [baselineResult, improvedResult] = await Promise.all([
         cartoonize(selectedFile, selectedStyleId, "baseline"),
-        cartoonize(selectedFile, selectedStyleId, "improved")
+        cartoonize(selectedFile, selectedStyleId, "improved_lite")
       ]);
       setBaseline(baselineResult);
       setImproved(improvedResult);
@@ -93,7 +93,7 @@ function App() {
           onClick={onRunComparison}
           disabled={isRunning || !selectedFile || !selectedStyleId}
         >
-          {isRunning ? "Running..." : "Generate Baseline + Improved"}
+          {isRunning ? "Running..." : "Generate Baseline + Improved Lite"}
         </button>
         {error ? <p className="error">{error}</p> : null}
       </section>

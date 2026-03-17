@@ -1,0 +1,32 @@
+{
+  "hayao": {
+    "score": -0.107236,
+    "resize_max": 1024,
+    "denoise_strength": 0.36,
+    "edge_weight": 0.18,
+    "color_quant_k": 24,
+    "contrast_gain": 1.04,
+    "sharpen_amount": 0.0,
+    "saturation_gain": 1.0
+  },
+  "shinkai": {
+    "score": -0.15437,
+    "resize_max": 1024,
+    "denoise_strength": 0.36,
+    "edge_weight": 0.1,
+    "color_quant_k": 24,
+    "contrast_gain": 1.04,
+    "sharpen_amount": 0.0,
+    "saturation_gain": 1.06
+  },
+  "paprika": {
+    "score": -0.110571,
+    "resize_max": 1024,
+    "denoise_strength": 0.28,
+    "edge_weight": 0.14,
+    "color_quant_k": 24,
+    "contrast_gain": 1.02,
+    "sharpen_amount": 0.0,
+    "saturation_gain": 1.0
+  }
+}

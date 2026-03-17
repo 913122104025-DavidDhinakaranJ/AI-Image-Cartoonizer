@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-Variant = Literal["baseline", "improved"]
+Variant = Literal["baseline", "improved", "improved_lite"]
 
 
 class StyleInfo(BaseModel):

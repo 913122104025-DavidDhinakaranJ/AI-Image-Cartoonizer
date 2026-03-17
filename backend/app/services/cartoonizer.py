@@ -48,10 +48,28 @@ class CartoonizerService:
             self._warn_missing_model(style_id, model_path)
             return None
 
-        session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
+        providers = self._select_providers()
+        session = ort.InferenceSession(str(model_path), providers=providers)
         self._sessions[style_id] = session
-        LOGGER.info("Loaded ONNX model for style '%s' from %s", style_id, model_path)
+        LOGGER.info(
+            "Loaded ONNX model for style '%s' from %s with providers: %s",
+            style_id,
+            model_path,
+            session.get_providers(),
+        )
         return session
+
+    def _select_providers(self) -> list[str]:
+        available = ort.get_available_providers()
+        preferred_order = [
+            "CUDAExecutionProvider",
+            "DmlExecutionProvider",
+            "CPUExecutionProvider",
+        ]
+        selected = [provider for provider in preferred_order if provider in available]
+        if not selected:
+            selected = ["CPUExecutionProvider"]
+        return selected
 
     def _warn_missing_model(self, style_id: str, model_path: Path | None) -> None:
         if style_id in self._warned_styles:

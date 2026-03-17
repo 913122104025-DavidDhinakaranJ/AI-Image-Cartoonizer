@@ -1,0 +1,5 @@
+style_id,samples,baseline_edge_ssim_mean,improved_edge_ssim_mean,edge_ssim_delta_mean,baseline_artifact_mean,improved_artifact_mean,artifact_delta_mean,baseline_latency_ms_mean,improved_latency_ms_mean,latency_delta_ms_mean,edge_win_rate,artifact_win_rate,overall_win_rate
+hayao,30,0.3233,0.3413,0.0181,0.0487,0.0652,0.0165,270.13,644.83,374.7,0.7333,0.0,0.0
+paprika,30,0.3098,0.3135,0.0037,0.0373,0.0548,0.0176,522.2,731.37,209.17,0.4667,0.0,0.0
+shinkai,30,0.0783,0.0983,0.0201,0.0176,0.0387,0.0211,214.63,597.63,383.0,0.8667,0.0,0.0
+__all__,90,0.2371,0.2511,0.0139,0.0345,0.0529,0.0184,335.66,657.94,322.29,0.6889,0.0,0.0
